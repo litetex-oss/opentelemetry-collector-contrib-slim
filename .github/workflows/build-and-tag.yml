@@ -44,5 +44,5 @@ jobs:
           git tag -f "$tag_name"
           git push -f origin "$tag_name"
 
-          git tag -f "receiver/prometheusreceiver/$compat_tag_name"
-          git push -f origin "receiver/prometheusreceiver/$compat_tag_name"
+          git tag -f "receiver/prometheusreceiver/$tag_name"
+          git push -f origin "receiver/prometheusreceiver/$tag_name"
