@@ -16,7 +16,6 @@ import (
 	commonconfig "github.com/prometheus/common/config"
 	promconfig "github.com/prometheus/prometheus/config"
 	"github.com/prometheus/prometheus/discovery"
-	"github.com/prometheus/prometheus/discovery/kubernetes"
 	"github.com/prometheus/prometheus/discovery/targetgroup"
 	"go.opentelemetry.io/collector/config/confighttp"
 	"go.opentelemetry.io/collector/config/configoptional"
@@ -124,14 +123,6 @@ func (cfg *PromConfig) Validate() error {
 		for _, sc := range scrapeConfigs {
 			if err := validateHTTPClientConfig(&sc.HTTPClientConfig); err != nil {
 				return err
-			}
-
-			for _, c := range sc.ServiceDiscoveryConfigs {
-				if c, ok := c.(*kubernetes.SDConfig); ok {
-					if err := validateHTTPClientConfig(&c.HTTPClientConfig); err != nil {
-						return err
-					}
-				}
 			}
 		}
 	}
