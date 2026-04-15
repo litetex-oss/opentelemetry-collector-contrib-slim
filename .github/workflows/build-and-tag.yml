@@ -1,0 +1,48 @@
+name: Build and tag
+
+on:
+  push:
+    branches:
+      - release-*
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: 'go.mod'
+
+      - name: Build receiver/prometheusreceiver
+        run: |
+          go build
+        working-directory: receiver/prometheusreceiver
+
+      - name: Init Git
+        run: |
+          git config --global user.email "actions@github.com"
+          git config --global user.name "actions"
+      
+      - name: Cleanup receiver/prometheusreceiver
+        run: |
+          go mod tidy
+
+          git commit -a -m "go mod tidy receiver/prometheusreceiver" || true
+          git push || true
+        working-directory: receiver/prometheusreceiver
+
+      - name: Create or Update Tag
+        run: |
+          branch_name=$(git rev-parse --abbrev-ref HEAD)
+          tag_name=${branch_name:8}
+          git tag -f "$tag_name"
+          git push -f origin "$tag_name"
+
+          git tag -f "receiver/prometheusreceiver/$tag_name"
+          git push -f origin "receiver/prometheusreceiver/$tag_name"
