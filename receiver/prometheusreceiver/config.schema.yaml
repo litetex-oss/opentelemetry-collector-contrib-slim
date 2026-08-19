@@ -698,9 +698,6 @@ $defs:
     type: object
 description: Config defines configuration for Prometheus receiver.
 properties:
-  api_server:
-    $ref: ./internal/apiserver.config
-    description: APIServer has the settings to enable the receiver to host the Prometheus API server in agent mode. This allows the user to call the endpoint to get the config, service discovery, and targets for debugging purposes.
   config:
     $ref: prom_config
     x-pointer: true

@@ -15,7 +15,6 @@ import (
 	"go.opentelemetry.io/collector/receiver"
 	"go.uber.org/zap"
 
-	"github.com/open-telemetry/opentelemetry-collector-contrib/receiver/prometheusreceiver/internal/apiserver"
 	"github.com/open-telemetry/opentelemetry-collector-contrib/receiver/prometheusreceiver/internal/metadata"
 	"github.com/open-telemetry/opentelemetry-collector-contrib/receiver/prometheusreceiver/internal/targetallocator"
 )
@@ -42,7 +41,6 @@ func createDefaultConfig() component.Config {
 		TargetAllocator: configoptional.Default(targetallocator.Config{
 			ClientConfig: taClientConfig,
 		}),
-		APIServer: apiserver.DefaultConfig(),
 	}
 }
 
