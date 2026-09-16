@@ -17,12 +17,10 @@ import (
 	commonconfig "github.com/prometheus/common/config"
 	promconfig "github.com/prometheus/prometheus/config"
 	"github.com/prometheus/prometheus/discovery"
-	"github.com/prometheus/prometheus/discovery/kubernetes"
 	"github.com/prometheus/prometheus/discovery/targetgroup"
 	"go.opentelemetry.io/collector/config/configoptional"
 	"go.opentelemetry.io/collector/confmap"
 
-	"github.com/open-telemetry/opentelemetry-collector-contrib/receiver/prometheusreceiver/internal/apiserver"
 	"github.com/open-telemetry/opentelemetry-collector-contrib/receiver/prometheusreceiver/internal/targetallocator"
 )
 
@@ -32,11 +30,6 @@ type Config struct {
 	TrimMetricSuffixes bool        `mapstructure:"trim_metric_suffixes"`
 
 	TargetAllocator configoptional.Optional[targetallocator.Config] `mapstructure:"target_allocator"`
-
-	//  APIServer has the settings to enable the receiver to host the Prometheus API
-	// server in agent mode. This allows the user to call the endpoint to get
-	// the config, service discovery, and targets for debugging purposes.
-	APIServer apiserver.Config `mapstructure:"api_server"`
 
 	// ScrapeOnShutdown enables a final scrape before the receiver closes.
 	//
@@ -135,14 +128,6 @@ func (cfg *PromConfig) Validate() error {
 		for _, sc := range scrapeConfigs {
 			if err := validateHTTPClientConfig(&sc.HTTPClientConfig); err != nil {
 				return err
-			}
-
-			for _, c := range sc.ServiceDiscoveryConfigs {
-				if c, ok := c.(*kubernetes.SDConfig); ok {
-					if err := validateHTTPClientConfig(&c.HTTPClientConfig); err != nil {
-						return err
-					}
-				}
 			}
 		}
 	}
