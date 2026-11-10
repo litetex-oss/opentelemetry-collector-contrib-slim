@@ -27,7 +27,6 @@ import (
 	"go.uber.org/zap/exp/zapslog"
 
 	"github.com/open-telemetry/opentelemetry-collector-contrib/receiver/prometheusreceiver/internal"
-	"github.com/open-telemetry/opentelemetry-collector-contrib/receiver/prometheusreceiver/internal/apiserver"
 	"github.com/open-telemetry/opentelemetry-collector-contrib/receiver/prometheusreceiver/internal/metadata"
 	"github.com/open-telemetry/opentelemetry-collector-contrib/receiver/prometheusreceiver/internal/sharedpromconfig"
 	"github.com/open-telemetry/opentelemetry-collector-contrib/receiver/prometheusreceiver/internal/targetallocator"
@@ -50,7 +49,6 @@ type pReceiver struct {
 	scrapeManager          *scrape.Manager
 	discoveryManager       *discovery.Manager
 	targetAllocatorManager *targetallocator.Manager
-	apiServerManager       *apiserver.Manager
 	registry               *prometheus.Registry
 	registerer             prometheus.Registerer
 	unregisterMetrics      func()
@@ -69,16 +67,6 @@ func newPrometheusReceiver(set receiver.Settings, cfg *Config, next consumer.Met
 		registry,
 	)
 	sharedCfg := sharedpromconfig.NewConfig(&baseCfg)
-	var apiServerManager *apiserver.Manager
-	if cfg.APIServer.Enabled {
-		apiServerManager = apiserver.NewManager(
-			set,
-			&cfg.APIServer,
-			sharedCfg,
-			registry,
-			registerer,
-		)
-	}
 
 	pr := &pReceiver{
 		cfg:          cfg,
@@ -92,7 +80,6 @@ func newPrometheusReceiver(set receiver.Settings, cfg *Config, next consumer.Met
 			cfg.TargetAllocator.Get(),
 			sharedCfg,
 		),
-		apiServerManager: apiServerManager,
 	}
 	return pr, nil
 }
@@ -123,13 +110,6 @@ func (r *pReceiver) start(ctx context.Context, host component.Host, opts prometh
 	r.loadConfigOnce.Do(func() {
 		close(r.configLoaded)
 	})
-
-	if r.apiServerManager != nil {
-		err := r.apiServerManager.Start(ctx, host, r.scrapeManager)
-		if err != nil {
-			r.settings.Logger.Error("Failed to start APIServer", zap.Error(err))
-		}
-	}
 
 	return nil
 }
@@ -255,11 +235,6 @@ func (r *pReceiver) Shutdown(ctx context.Context) error {
 	}
 	if r.unregisterMetrics != nil {
 		r.unregisterMetrics()
-	}
-	if r.apiServerManager != nil {
-		if err := r.apiServerManager.Shutdown(ctx); err != nil {
-			return err
-		}
 	}
 	return nil
 }
